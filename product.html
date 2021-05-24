@@ -74,7 +74,7 @@
           <div class="modal-header">
             <h5 class="modal-title" v-if="isNew">產品新增</h5>
             <h5 class="modal-title" v-else>產品編輯</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="clearInput"></button>
           </div>
           <div class="modal-body">
             <form>
@@ -123,7 +123,7 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" @click="clearInput">取消</button>
             <button type="button" class="btn btn-primary" @click="addProduct">確認</button>
           </div>
         </div>
@@ -142,7 +142,7 @@
           url: 'https://vue3-course-api.hexschool.io/',
           path: 'linachen',
           productList: [],
-          tempProduct: [],
+          tempProduct: {},
           alertInfo: false,
           successtInfo: false,
           isNew: true
@@ -200,7 +200,7 @@
             obj.description = productDesc.value;
             obj['origin_price'] = parseInt(productOriginPrice.value);
             obj.price = parseInt(productPrice.value);
-            obj['is_enabled'] = enabled.value ===1? 1:0;
+            obj['is_enabled'] = (enabled.checked ===true? 1:0);
             obj.imageUrl = productImage.value;
             let edit = {};
             edit.data = {...obj};
@@ -210,6 +210,7 @@
               console.log(res);
               this.successtInfo = true;
               this.getProductList();
+              this.tempProduct ={};
             })
           }
 
@@ -244,6 +245,18 @@
               productImage.value = item.imageUrl;
             }
           });    
+        },
+        clearInput(){
+          // reset
+          productTitle.value = '';
+          productCategory.value = '';
+          productUnit.value = '';
+          productContent.value = '';
+          productDesc.value = '';
+          productOriginPrice.value = '';
+          productPrice.value = '';
+          productImage.value = '';
+          enabled.value = 0;
         },
         logout() {
           axios.post(`${this.url}logout`)
