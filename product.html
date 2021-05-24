@@ -55,7 +55,7 @@
                   <td>{{ product.price }}</td>
                   <td>{{ product.origin_price }}</td>
                   <td>{{ product['is_enabled'] === 1? '啟用':'未啟用' }}</td>
-                  <td><button type="button" :data-id='product.id' class="btn btn-primary me-2">編輯</button><button
+                  <td><button type="button" :data-id='product.id' class="btn btn-primary me-2" @click="editModal">編輯</button><button
                       type="button" :data-id='product.id' class="btn btn-outline-danger"
                       @click="deleteProduct">刪除</button></td>
                 </tr>
@@ -72,7 +72,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">產品新增</h5>
+            <h5 class="modal-title">產品新增</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -130,11 +130,76 @@
     </div>
   </div>
 
+  <!-- 編輯產品 -->
+  <div class="modal fade" id="editBox" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">產品編輯</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="editTitle" class="form-label">商品名稱<span class="text-danger">(必填)</span></label>
+              <input type="text" class="form-control" id="editTitle" placeholder="動物園造型衣服">
+            </div>
+            <div class="mb-3">
+              <label for="editCategory" class="form-label">商品種類<span class="text-danger">(必填)</span></label>
+              <input type="text" class="form-control" id="editCategory" placeholder="衣服">
+            </div>
+            <div class="mb-3">
+              <label for="editUnit" class="form-label">商品單位<span class="text-danger">(必填)</span></label>
+              <input type="text" class="form-control" id="editUnit" placeholder="個">
+            </div>
+            <div class="mb-3">
+              <label for="editContent" class="form-label">商品內容</label>
+              <input type="text" class="form-control" id="editContent" placeholder="內容">
+            </div>
+            <div class="mb-3">
+              <label for="editDesc" class="form-label">商品描述</label>
+              <textarea class="form-control" id="editDesc" rows="3" placeholder="商品描述"></textarea>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label for="editOriginPrice" class="form-label">商品原價<span class="text-danger">(必填)</span></label>
+                <input type="number" class="form-control" placeholder="商品原價" min="0" id='editOriginPrice'>
+              </div>
+              <div class="col">
+                <label for="editPrice" class="form-label">商品售價<span class="text-danger">(必填)</span></label>
+                <input type="number" class="form-control" min="0" placeholder="商品售價" id='editPrice'>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editImage" class="form-label">商品圖片</label>
+              <input type="url" class="form-control" id="editImage" placeholder="商品圖片網址">
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" value='' type="checkbox" id="editEnabled">
+                <label class="form-check-label" for="editEnabled">
+                  是否啟用
+                </label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" @click="editProduct">編輯</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
     crossorigin="anonymous"></script>
   <script>
     let modal = '';
+    let editmodal = '';
     const app = {
       data() {
         return {
@@ -149,7 +214,6 @@
         getProductList() {
           axios.get(`${this.url}api/${this.path}/admin/products`)
             .then(res => {
-              console.log(res);
               this.productList = [...res.data.products];
             })
         },
@@ -165,16 +229,6 @@
           modal.show();
         },
         addProduct() {
-          const productTitle = document.querySelector('#productTitle');
-          const productCategory = document.querySelector('#productCategory');
-          const productUnit = document.querySelector('#productUnit');
-          const productContent = document.querySelector('#productContent');
-          const productDesc = document.querySelector('#productDesc');
-          const productOriginPrice = document.querySelector('#productOriginPrice');
-          const productPrice = document.querySelector('#productPrice');
-          const enabled = document.querySelector('#enabled');
-          const productImage = document.querySelector('#productImage');
-
           if (!productTitle.value || !productCategory.value || !productUnit.value || !productOriginPrice.value || !productPrice.value) {
             alert('必填欄位不得為空');
             return;
@@ -199,6 +253,34 @@
             })
 
           modal.hide();
+
+          // reset
+          productTitle.value = '';
+          productCategory.value='';
+          productUnit.value = '';
+          productContent.value = '';
+          productDesc.value = '';
+          productOriginPrice.value = '';
+          productPrice.value = '';
+          productImage.value = '';
+          enabled.value = 0;
+        },
+        editModal(e){       
+          editmodal.show();
+          let id = e.target.dataset.id;
+          this.productList.forEach(item => {
+            if(item.id === id){
+              editTitle.value = item.title;
+              editCategory.value = item.category;
+              editUnit.value = item.unit;
+              editContent.value = item.content;
+              editDesc.value = item.description;
+              editOriginPrice.value = item['origin_price'];
+              editPrice.value = item.price;
+              editEnabled.checked = item['is_enabled'] === 1 ? true : false;
+              editImage.value = item.imageUrl;
+            }
+          });        
         },
         logout() {
           axios.post(`${this.url}logout`)
@@ -214,15 +296,40 @@
               console.log(error);
             }
           })
+        },
+        editProduct() {
+          editmodal.hide();
         }
       },      
       created() {
+        // add modal form
+        const productTitle = document.querySelector('#productTitle');
+        const productCategory = document.querySelector('#productCategory');
+        const productUnit = document.querySelector('#productUnit');
+        const productContent = document.querySelector('#productContent');
+        const productDesc = document.querySelector('#productDesc');
+        const productOriginPrice = document.querySelector('#productOriginPrice');
+        const productPrice = document.querySelector('#productPrice');
+        const enabled = document.querySelector('#enabled');
+        const productImage = document.querySelector('#productImage');
+        // edit modal form
+        const editTitle = document.querySelector('#editTitle');
+        const editCategory = document.querySelector('#editCategory');
+        const editUnit = document.querySelector('#editUnit');
+        const editContent = document.querySelector('#editContent');
+        const editDesc = document.querySelector('#editDesc');
+        const editOriginPrice = document.querySelector('#editOriginPrice');
+        const editPrice = document.querySelector('#editPrice');
+        const editEnabled = document.querySelector('#editEnabled');
+        const editImage = document.querySelector('#productImage');
+        // token
         const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
         axios.defaults.headers.common['Authorization'] = token;
         this.getProductList();
       },
-      mounted() {
+      mounted() {  
         modal = new bootstrap.Modal(document.querySelector('#modalBox'));
+        editmodal = new bootstrap.Modal(document.querySelector('#editBox'));
       }
     };
 
