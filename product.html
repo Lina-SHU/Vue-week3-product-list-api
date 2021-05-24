@@ -17,6 +17,11 @@
     <div class="container">
       <div class="row">
         <div class="col">
+          <button class="btn btn-outline-info">登出</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
           <div class="d-flex justify-content-end">
             <button type="button" class="btn btn-primary" id="addBtn" @click="showModal">
               新增商品
@@ -42,6 +47,7 @@
                 <th scope="col">商品分類</th>
                 <th scope="col">商品售價</th>
                 <th scope="col">商品原價</th>
+                <th scope="col">商品啟用</th>
                 <th scope="col">商品管理</th>
               </tr>
             </thead>
@@ -52,6 +58,7 @@
                   <td>{{ product.category }}</td>
                   <td>{{ product.price }}</td>
                   <td>{{ product.origin_price }}</td>
+                  <td>{{ product['is_enabled'] === 1? '啟用':'未啟用' }}</td>
                   <td><button type="button" :data-id='product.id' class="btn btn-primary me-2">編輯</button><button
                       type="button" :data-id='product.id' class="btn btn-outline-danger"
                       @click="deleteProduct">刪除</button></td>
@@ -64,7 +71,8 @@
     </div>
 
     <!-- 新增產品 -->
-    <div class="modal fade" id="modalBox" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modalBox" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -87,13 +95,13 @@
               </div>
               <div class="mb-3">
                 <label for="productContent" class="form-label">商品內容</label>
-                <textarea class="form-control" id="productContent" rows="3" placeholder="商品內容"></textarea>
+                <input type="text" class="form-control" id="productContent" placeholder="內容">
               </div>
               <div class="mb-3">
                 <label for="productDesc" class="form-label">商品描述</label>
                 <textarea class="form-control" id="productDesc" rows="3" placeholder="商品描述"></textarea>
               </div>
-              <div class="row">
+              <div class="row mb-3">
                 <div class="col">
                   <label for="productOriginPrice" class="form-label">商品原價<span class="text-danger">(必填)</span></label>
                   <input type="number" class="form-control" placeholder="商品原價" min="0" id='productOriginPrice'>
@@ -101,6 +109,18 @@
                 <div class="col">
                   <label for="productPrice" class="form-label">商品售價<span class="text-danger">(必填)</span></label>
                   <input type="number" class="form-control" min="0" placeholder="商品售價" id='productPrice'>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="productImage" class="form-label">商品圖片</label>
+                <input type="url" class="form-control" id="productImage" placeholder="商品圖片網址">
+              </div>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="enabled">
+                  <label class="form-check-label" for="enabled">
+                    是否啟用
+                  </label>
                 </div>
               </div>
             </form>
@@ -118,7 +138,7 @@
     integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
     crossorigin="anonymous"></script>
   <script>
-    let modal='';
+    let modal = '';
     const app = {
       data() {
         return {
@@ -145,10 +165,10 @@
               this.getProductList();
             })
         },
-        showModal(){ 
+        showModal() {
           modal.show();
         },
-        addProduct(){
+        addProduct() {
           const productTitle = document.querySelector('#productTitle');
           const productCategory = document.querySelector('#productCategory');
           const productUnit = document.querySelector('#productUnit');
@@ -156,13 +176,15 @@
           const productDesc = document.querySelector('#productDesc');
           const productOriginPrice = document.querySelector('#productOriginPrice');
           const productPrice = document.querySelector('#productPrice');
+          const enabled = document.querySelector('#enabled');
+          const productImage = document.querySelector('#productImage');
 
-          if(!productTitle.value || !productCategory.value || !productUnit.value || !productOriginPrice.value || !productPrice.value){
+          if (!productTitle.value || !productCategory.value || !productUnit.value || !productOriginPrice.value || !productPrice.value) {
             alert('必填欄位不得為空');
             return;
           }
 
-          let item ={ data:{}};
+          let item = { data: {} };
           item.data.title = productTitle.value;
           item.data.category = productCategory.value;
           item.data.unit = productUnit.value;
@@ -170,25 +192,25 @@
           item.data.description = productDesc.value;
           item.data['origin_price'] = parseInt(productOriginPrice.value);
           item.data.price = parseInt(productPrice.value);
-          item.data['is_enabled'] =1;
-          item.data.imageUrl = "";
+          item.data['is_enabled'] = enabled.value === true ? 1 : 0;
+          item.data.imageUrl = productImage.value;
           item.data.imagesUrl = [];
-          
+
           axios.post(`${this.url}api/${this.path}/admin/product`, item)
-          .then(res=>{
-            this.successtInfo = !this.successtInfo;
-            this.getProductList();
-          })
+            .then(res => {
+              this.successtInfo = !this.successtInfo;
+              this.getProductList();
+            })
 
           modal.hide();
         }
       },
       created() {
         const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-        axios.defaults.headers.common['Authorization'] = token;   
+        axios.defaults.headers.common['Authorization'] = token;
         this.getProductList();
       },
-      mounted(){
+      mounted() {
         modal = new bootstrap.Modal(document.querySelector('#modalBox'));
       }
     };
