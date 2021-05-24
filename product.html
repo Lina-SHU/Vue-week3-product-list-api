@@ -23,9 +23,15 @@
             </button>
           </div>
 
-          <div class="feedback" v-if="feedbackInfo">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <div class="feedback" v-if="alertInfo">
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
               刪除成功
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          </div>
+          <div class="feedback" v-if="successtInfo">
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+              商品新增成功
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           </div>
@@ -68,15 +74,15 @@
           <div class="modal-body">
             <form>
               <div class="mb-3">
-                <label for="productTitle" class="form-label">商品名稱</label>
+                <label for="productTitle" class="form-label">商品名稱<span class="text-danger">(必填)</span></label>
                 <input type="text" class="form-control" id="productTitle" placeholder="動物園造型衣服">
               </div>
               <div class="mb-3">
-                <label for="productCategory" class="form-label">商品種類</label>
+                <label for="productCategory" class="form-label">商品種類<span class="text-danger">(必填)</span></label>
                 <input type="text" class="form-control" id="productCategory" placeholder="衣服">
               </div>
               <div class="mb-3">
-                <label for="productUnit" class="form-label">商品單位</label>
+                <label for="productUnit" class="form-label">商品單位<span class="text-danger">(必填)</span></label>
                 <input type="text" class="form-control" id="productUnit" placeholder="個">
               </div>
               <div class="mb-3">
@@ -89,19 +95,19 @@
               </div>
               <div class="row">
                 <div class="col">
-                  <label for="productUnit" class="form-label">商品原價</label>
-                  <input type="number" class="form-control" placeholder="商品原價" min="0">
+                  <label for="productOriginPrice" class="form-label">商品原價<span class="text-danger">(必填)</span></label>
+                  <input type="number" class="form-control" placeholder="商品原價" min="0" id='productOriginPrice'>
                 </div>
                 <div class="col">
-                  <label for="productUnit" class="form-label">商品售價</label>
-                  <input type="number" class="form-control" min="0" placeholder="商品售價">
+                  <label for="productPrice" class="form-label">商品售價<span class="text-danger">(必填)</span></label>
+                  <input type="number" class="form-control" min="0" placeholder="商品售價" id='productPrice'>
                 </div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" @click="closeModal">新增</button>
+            <button type="button" class="btn btn-primary" @click="addProduct">新增</button>
           </div>
         </div>
       </div>
@@ -119,7 +125,8 @@
           url: 'https://vue3-course-api.hexschool.io/',
           path: 'linachen',
           productList: [],
-          feedbackInfo: false
+          alertInfo: false,
+          successtInfo: false
         }
       },
       methods: {
@@ -134,14 +141,45 @@
           let id = e.target.dataset.id;
           axios.delete(`${this.url}api/${this.path}/admin/product/${id}`)
             .then(res => {
-              this.feedbackInfo = !this.feedbackInfo;
+              this.alertInfo = !this.alertInfo;
               this.getProductList();
             })
         },
         showModal(){ 
           modal.show();
         },
-        closeModal(){
+        addProduct(){
+          const productTitle = document.querySelector('#productTitle');
+          const productCategory = document.querySelector('#productCategory');
+          const productUnit = document.querySelector('#productUnit');
+          const productContent = document.querySelector('#productContent');
+          const productDesc = document.querySelector('#productDesc');
+          const productOriginPrice = document.querySelector('#productOriginPrice');
+          const productPrice = document.querySelector('#productPrice');
+
+          if(!productTitle.value || !productCategory.value || !productUnit.value || !productOriginPrice.value || !productPrice.value){
+            alert('必填欄位不得為空');
+            return;
+          }
+
+          let item ={ data:{}};
+          item.data.title = productTitle.value;
+          item.data.category = productCategory.value;
+          item.data.unit = productUnit.value;
+          item.data.content = productContent.value;
+          item.data.description = productDesc.value;
+          item.data['origin_price'] = parseInt(productOriginPrice.value);
+          item.data.price = parseInt(productPrice.value);
+          item.data['is_enabled'] =1;
+          item.data.imageUrl = "";
+          item.data.imagesUrl = [];
+          
+          axios.post(`${this.url}api/${this.path}/admin/product`, item)
+          .then(res=>{
+            this.successtInfo = !this.successtInfo;
+            this.getProductList();
+          })
+
           modal.hide();
         }
       },
