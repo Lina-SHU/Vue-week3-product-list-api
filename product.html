@@ -66,11 +66,42 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            ...
+            <form>
+              <div class="mb-3">
+                <label for="productTitle" class="form-label">商品名稱</label>
+                <input type="text" class="form-control" id="productTitle" placeholder="動物園造型衣服">
+              </div>
+              <div class="mb-3">
+                <label for="productCategory" class="form-label">商品種類</label>
+                <input type="text" class="form-control" id="productCategory" placeholder="衣服">
+              </div>
+              <div class="mb-3">
+                <label for="productUnit" class="form-label">商品單位</label>
+                <input type="text" class="form-control" id="productUnit" placeholder="個">
+              </div>
+              <div class="mb-3">
+                <label for="productContent" class="form-label">商品內容</label>
+                <textarea class="form-control" id="productContent" rows="3" placeholder="商品內容"></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="productDesc" class="form-label">商品描述</label>
+                <textarea class="form-control" id="productDesc" rows="3" placeholder="商品描述"></textarea>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <label for="productUnit" class="form-label">商品原價</label>
+                  <input type="number" class="form-control" placeholder="商品原價" min="0">
+                </div>
+                <div class="col">
+                  <label for="productUnit" class="form-label">商品售價</label>
+                  <input type="number" class="form-control" min="0" placeholder="商品售價">
+                </div>
+              </div>
+            </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary">新增</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" @click="closeModal">新增</button>
           </div>
         </div>
       </div>
@@ -81,6 +112,7 @@
     integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
     crossorigin="anonymous"></script>
   <script>
+    let modal='';
     const app = {
       data() {
         return {
@@ -106,16 +138,20 @@
               this.getProductList();
             })
         },
-        showModal(){
-          const modalBox = document.querySelector('#modalBox');
-          const modal = new bootstrap.Modal(modalBox);
+        showModal(){ 
           modal.show();
+        },
+        closeModal(){
+          modal.hide();
         }
       },
       created() {
         const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-        axios.defaults.headers.common['Authorization'] = token;
+        axios.defaults.headers.common['Authorization'] = token;   
         this.getProductList();
+      },
+      mounted(){
+        modal = new bootstrap.Modal(document.querySelector('#modalBox'));
       }
     };
 
