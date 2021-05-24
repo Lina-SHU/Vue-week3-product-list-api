@@ -17,6 +17,12 @@
     <div class="container">
       <div class="row">
         <div class="col">
+          <div class="feedback" v-if="feedbackInfo">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              刪除成功
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          </div>
           <table class="table">
             <thead>
               <tr>
@@ -34,7 +40,9 @@
                   <td>{{ product.category }}</td>
                   <td>{{ product.price }}</td>
                   <td>{{ product.origin_price }}</td>
-                  <td><button type="button" :data-id='product.id' class="btn btn-primary me-2">編輯</button><button type="button" :data-id='product.id' class="btn btn-outline-danger">刪除</button></td>
+                  <td><button type="button" :data-id='product.id' class="btn btn-primary me-2">編輯</button><button
+                      type="button" :data-id='product.id' class="btn btn-outline-danger"
+                      @click="deleteProduct">刪除</button></td>
                 </tr>
               </template>
             </tbody>
@@ -53,7 +61,8 @@
         return {
           url: 'https://vue3-course-api.hexschool.io/',
           path: 'linachen',
-          productList: []
+          productList: [],
+          feedbackInfo: false
         }
       },
       methods: {
@@ -62,6 +71,14 @@
             .then(res => {
               console.log(res);
               this.productList = [...res.data.products];
+            })
+        },
+        deleteProduct(e) {
+          let id = e.target.dataset.id;
+          axios.delete(`${this.url}api/${this.path}/admin/product/${id}`)
+            .then(res => {
+              this.feedbackInfo = !this.feedbackInfo;
+              this.getProductList();
             })
         }
       },
