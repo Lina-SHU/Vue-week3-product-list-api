@@ -27,13 +27,13 @@
           <div class="feedback" v-if="alertInfo">
             <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
               刪除成功
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" @click="feedbackClose"></button>
             </div>
           </div>
           <div class="feedback" v-if="successtInfo">
             <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
               確認成功
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" @click="showModal"></button>
             </div>
           </div>
           <table class="table">
@@ -246,6 +246,10 @@
           productPrice.value = '';
           productImage.value = '';
           enabled.value = 0;
+        },
+        feedbackClose(){
+          this.successtInfo = false;
+          this.alertInfo = false;
         },
         logout() {
           axios.post(`${this.url}logout`)
