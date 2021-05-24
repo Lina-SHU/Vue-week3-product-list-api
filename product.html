@@ -207,7 +207,6 @@
             
             axios.put(`${this.url}api/${this.path}/admin/product/${edit.data.id}`, edit)
             .then(res =>{
-              console.log(res);
               this.successtInfo = true;
               this.getProductList();
               this.tempProduct ={};
@@ -215,17 +214,7 @@
           }
 
           modal.hide();
-
-          // reset
-          productTitle.value = '';
-          productCategory.value='';
-          productUnit.value = '';
-          productContent.value = '';
-          productDesc.value = '';
-          productOriginPrice.value = '';
-          productPrice.value = '';
-          productImage.value = '';
-          enabled.value = 0;
+          this.clearInput();
         },
         editModal(e){       
           modal.show();
