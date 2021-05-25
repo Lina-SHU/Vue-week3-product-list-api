@@ -26,11 +26,11 @@
           </div>
           <form>     
             <div class="form-floating mb-3">
-              <input type="email" class="form-control" id="email" placeholder="name@example.com">
+              <input type="email" class="form-control" id="email" placeholder="name@example.com" v-model="username">
               <label for="email">Email</label>
             </div>
             <div class="form-floating">
-              <input type="password" class="form-control" id="password" placeholder="Password">
+              <input type="password" class="form-control" id="password" placeholder="Password" v-model="password">
               <label for="password">Password</label>
             </div>
             <button type="button" class="btn btn-primary mt-3" @click="login">登入</button>
@@ -49,17 +49,16 @@
         return {
           url: 'https://vue3-course-api.hexschool.io/',
           path:'linachen' ,
-          feedbackInfo: false
+          feedbackInfo: false,
+          username:'',
+          password:''
         }
       },
       methods: {
         login(){
-          const email = document.querySelector('#email').value;
-          const password = document.querySelector('#password').value;
-
           const user ={
-            username: email, 
-            password
+            username: this.username,
+            password: this.password
           }
           
           axios.post(`${this.url}admin/signin`, user)
@@ -67,11 +66,13 @@
             if(!res.data.success){
               this.feedbackInfo = !this.feedbackInfo;
             }else{
-              const token = res.data.token;
-              const expired = res.data.expired;
+              const {token, expired} = res.data;
               document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
               window.location='./product.html'
             }
+          })
+          .catch(err=>{
+            console.log(err);
           })
         }
       }

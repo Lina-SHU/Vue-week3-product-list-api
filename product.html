@@ -83,41 +83,41 @@
             <form>
               <div class="mb-3">
                 <label for="productTitle" class="form-label">商品名稱<span class="text-danger">(必填)</span></label>
-                <input type="text" class="form-control" id="productTitle" placeholder="動物園造型衣服">
+                <input type="text" class="form-control" id="productTitle" placeholder="動物園造型衣服" v-model="tempProduct.title">
               </div>
               <div class="mb-3">
                 <label for="productCategory" class="form-label">商品種類<span class="text-danger">(必填)</span></label>
-                <input type="text" class="form-control" id="productCategory" placeholder="衣服">
+                <input type="text" class="form-control" id="productCategory" placeholder="衣服" v-model="tempProduct.category">
               </div>
               <div class="mb-3">
                 <label for="productUnit" class="form-label">商品單位<span class="text-danger">(必填)</span></label>
-                <input type="text" class="form-control" id="productUnit" placeholder="個">
+                <input type="text" class="form-control" id="productUnit" placeholder="個" v-model="tempProduct.unit">
               </div>
               <div class="mb-3">
                 <label for="productContent" class="form-label">商品內容</label>
-                <input type="text" class="form-control" id="productContent" placeholder="內容">
+                <input type="text" class="form-control" id="productContent" placeholder="內容" v-model="tempProduct.content">
               </div>
               <div class="mb-3">
                 <label for="productDesc" class="form-label">商品描述</label>
-                <textarea class="form-control" id="productDesc" rows="3" placeholder="商品描述"></textarea>
+                <textarea class="form-control" id="productDesc" rows="3" placeholder="商品描述" v-model="tempProduct.description"></textarea>
               </div>
               <div class="row mb-3">
                 <div class="col">
                   <label for="productOriginPrice" class="form-label">商品原價<span class="text-danger">(必填)</span></label>
-                  <input type="number" class="form-control" placeholder="商品原價" min="0" id='productOriginPrice'>
+                  <input type="number" class="form-control" placeholder="商品原價" min="0" id='productOriginPrice' v-model.number="tempProduct['origin_price']">
                 </div>
                 <div class="col">
                   <label for="productPrice" class="form-label">商品售價<span class="text-danger">(必填)</span></label>
-                  <input type="number" class="form-control" min="0" placeholder="商品售價" id='productPrice'>
+                  <input type="number" class="form-control" min="0" placeholder="商品售價" id='productPrice' v-model.number='tempProduct.price'>
                 </div>
               </div>
               <div class="mb-3">
                 <label for="productImage" class="form-label">商品圖片</label>
-                <input type="url" class="form-control" id="productImage" placeholder="商品圖片網址">
+                <input type="url" class="form-control" id="productImage" placeholder="商品圖片網址" v-model="tempProduct.imageUrl">
               </div>
               <div class="mb-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="enabled">
+                  <input class="form-check-input" type="checkbox" id="enabled" v-model="tempProduct['is_enabled']" :true-value="1" :false-value="0">
                   <label class="form-check-label" for="enabled">
                     是否啟用
                   </label>
@@ -165,7 +165,9 @@
           url: 'https://vue3-course-api.hexschool.io/',
           path: 'linachen',
           productList: [],
-          tempProduct: [],
+          tempProduct: {
+            imagesUrl:[]
+          },
           alertInfo: false,
           successtInfo: false,
           isNew: true
@@ -175,7 +177,10 @@
         getProductList() {
           axios.get(`${this.url}api/${this.path}/admin/products`)
             .then(res => {
-              this.productList = [...res.data.products];
+              this.productList = res.data.products;
+            })
+            .catch(err=>{
+              console.log(err);
             })
         },
         deleteShow(e) {
@@ -191,8 +196,11 @@
             .then(res => {
               this.alertInfo = true;
               this.getProductList();
-              this.tempProduct = [];
+              this.tempProduct = {};
               deleteModal.hide();
+            })
+            .catch(err=>{
+              console.log(err);
             })
         },
         showModal() {
@@ -200,47 +208,29 @@
           modal.show();
         },
         addProduct() {
-          if (!productTitle.value || !productCategory.value || !productUnit.value || !productOriginPrice.value || !productPrice.value) {
+          if (!this.tempProduct.title || !this.tempProduct.category || !this.tempProduct.unit || !this.tempProduct['origin_price'] || !this.tempProduct.price) {
             alert('必填欄位不得為空');
             return;
           }
-          if(this.tempProduct.length ===0){
-            let item = { data: {} };
-            item.data.title = productTitle.value;
-            item.data.category = productCategory.value;
-            item.data.unit = productUnit.value;
-            item.data.content = productContent.value;
-            item.data.description = productDesc.value;
-            item.data['origin_price'] = parseInt(productOriginPrice.value);
-            item.data.price = parseInt(productPrice.value);
-            item.data['is_enabled'] = enabled.value === true ? 1 : 0;
-            item.data.imageUrl = productImage.value;
-            item.data.imagesUrl = [];
-
-            axios.post(`${this.url}api/${this.path}/admin/product`, item)
+          if(this.isNew){
+            axios.post(`${this.url}api/${this.path}/admin/product`, {data:{ ...this.tempProduct}})
               .then(res => {
                 this.successtInfo = true;
                 this.getProductList();
+                this.tempProduct = {};
+              })
+              .catch(err=>{
+                console.log(err);
               })
           }else{
-            let obj = JSON.parse(JSON.stringify(this.tempProduct));
-            obj.title = productTitle.value;
-            obj.category = productCategory.value;
-            obj.unit = productUnit.value;
-            obj.content = productContent.value;
-            obj.description = productDesc.value;
-            obj['origin_price'] = parseInt(productOriginPrice.value);
-            obj.price = parseInt(productPrice.value);
-            obj['is_enabled'] = (enabled.checked ===true? 1:0);
-            obj.imageUrl = productImage.value;
-            let edit = {};
-            edit.data = {...obj};
-            
-            axios.put(`${this.url}api/${this.path}/admin/product/${edit.data.id}`, edit)
+            axios.put(`${this.url}api/${this.path}/admin/product/${this.tempProduct.id}`, { data:{...this.tempProduct} })
             .then(res =>{
               this.successtInfo = true;
               this.getProductList();
-              this.tempProduct = [];
+              this.tempProduct ={};
+            })
+            .catch(err=>{
+              console.log(err);
             })
           }
 
@@ -254,30 +244,13 @@
           this.productList.forEach(item => {
             if(item.id === id){
               this.tempProduct = JSON.parse(JSON.stringify(item));
-              productTitle.value = item.title;
-              productCategory.value = item.category;
-              productUnit.value = item.unit;
-              productContent.value = item.content;
-              productDesc.value = item.description;
-              productOriginPrice.value = item['origin_price'];
-              productPrice.value = item.price;
-              enabled.checked = item['is_enabled'] === 1 ? true : false;
-              productImage.value = item.imageUrl;
             }
           });    
         },
         clearInput(){
           // reset
-          productTitle.value = '';
-          productCategory.value = '';
-          productUnit.value = '';
-          productContent.value = '';
-          productDesc.value = '';
-          productOriginPrice.value = '';
-          productPrice.value = '';
-          productImage.value = '';
-          enabled.value = 0;
-          this.tempProduct = [];
+          this.isNew = true;
+          this.tempProduct = {};
         },
         feedbackClose(){
           this.successtInfo = false;
@@ -297,22 +270,15 @@
               console.log(error);
             }
           })
+          .catch(err=>{
+            console.log(err);
+          })
         }
       },
       mounted() {  
+        // modal
         modal = new bootstrap.Modal(document.querySelector('#modalBox'));
         deleteModal = new bootstrap.Modal(document.querySelector('#deleteModalBox'));
-
-        // add modal form
-        const productTitle = document.querySelector('#productTitle');
-        const productCategory = document.querySelector('#productCategory');
-        const productUnit = document.querySelector('#productUnit');
-        const productContent = document.querySelector('#productContent');
-        const productDesc = document.querySelector('#productDesc');
-        const productOriginPrice = document.querySelector('#productOriginPrice');
-        const productPrice = document.querySelector('#productPrice');
-        const enabled = document.querySelector('#enabled');
-        const productImage = document.querySelector('#productImage');
 
         // token
         const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
