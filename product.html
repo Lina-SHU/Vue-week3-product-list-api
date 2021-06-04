@@ -56,10 +56,10 @@
                   <td>{{ product.origin_price }}</td>
                   <td :class="{'text-success': product['is_enabled']? true:false}">{{ product['is_enabled']? '啟用':'未啟用' }}</td>
                   <td>
-                    <button type="button" :data-id='product.id' class="btn btn-primary me-2" @click="editModal(product.id)">編輯</button>
+                    <button type="button" :data-id='product.id' class="btn btn-primary me-2" @click="editModal(product, product.id)">編輯</button>
                     <button
                       type="button" :data-id='product.id' class="btn btn-outline-danger"
-                      @click="deleteModal(product.id)">刪除</button>
+                      @click="deleteModal(product, product.id)">刪除</button>
                   </td>
                 </tr>
               </template>
@@ -77,7 +77,7 @@
           <div class="modal-header">
             <h5 class="modal-title" v-if="isNew">產品新增</h5>
             <h5 class="modal-title" v-else>產品編輯</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="clearInput"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form>
@@ -129,7 +129,7 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" @click="clearInput">取消</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
             <button type="button" class="btn btn-primary" @click="updateProduct">確認</button>
           </div>
         </div>
@@ -142,13 +142,13 @@
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
             <h5 class="modal-title">產品刪除</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="clearInput"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             是否確認刪除<strong class="text-danger">{{ tempProduct.title }}</strong>？(刪除後將無法恢復)
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" @click="clearInput">取消</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
             <button type="button" class="btn btn-danger" @click="deleteProduct">確認</button>
           </div>
         </div>
@@ -188,13 +188,9 @@
               console.log(err);
             })
         },
-        deleteModal(id) {
-          deleteModal.show();          
-          this.productList.forEach(item =>{
-            if (item.id === id){
-              this.tempProduct = JSON.parse(JSON.stringify(item));
-            }
-          }) 
+        deleteModal(product, id) {
+          deleteModal.show();    
+          this.tempProduct = JSON.parse(JSON.stringify(product));
         },      
         deleteProduct() {
           axios.delete(`${this.url}api/${this.path}/admin/product/${this.tempProduct.id}`)
@@ -202,7 +198,6 @@
               if(res.data.success){
                 this.alertInfo = true;
                 this.getProductList();
-                this.tempProduct = {};
                 deleteModal.hide();
               }   
             })
@@ -211,6 +206,7 @@
             })
         },
         addModal() {
+          this.tempProduct = { imagesUrl: []};
           this.isNew = true;
           modal.show();
         },
@@ -219,13 +215,13 @@
             alert('必填欄位不得為空');
             return;
           }
+
           if(this.isNew){
             axios.post(`${this.url}api/${this.path}/admin/product`, {data:{ ...this.tempProduct}})
               .then(res => {
                 if(res.data.success){
                   this.successtInfo = true;
                   this.getProductList();
-                  this.tempProduct = {};
                 }    
               })
               .catch(err=>{
@@ -237,30 +233,18 @@
               if(res.data.success){
                 this.successtInfo = true;
                 this.getProductList();
-                this.tempProduct = {};
               }     
             })
             .catch(err=>{
               console.log(err);
             })
           }
-
           modal.hide();
-          this.clearInput();
         },
-        editModal(id){       
+        editModal(product, id){       
           modal.show();
           this.isNew = false;
-          this.productList.forEach(item => {
-            if(item.id === id){
-              this.tempProduct = JSON.parse(JSON.stringify(item));
-            }
-          });    
-        },
-        clearInput(){
-          // reset
-          this.isNew = true;
-          this.tempProduct = {};
+          this.tempProduct = JSON.parse(JSON.stringify(product));   
         },
         feedbackClose(){
           this.successtInfo = false;
