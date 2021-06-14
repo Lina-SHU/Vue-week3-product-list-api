@@ -188,7 +188,7 @@
               console.log(err);
             })
         },
-        deleteModal(product, id) {
+        deleteModal(product) {
           deleteModal.show();    
           this.tempProduct = JSON.parse(JSON.stringify(product));
         },      
@@ -241,7 +241,7 @@
           }
           modal.hide();
         },
-        editModal(product, id){       
+        editModal(productPrice){       
           modal.show();
           this.isNew = false;
           this.tempProduct = JSON.parse(JSON.stringify(product));   
